@@ -1,0 +1,25 @@
+{
+  "name": "explore-mongoose",
+  "version": "0.1.0",
+  "description": "Testbed for learning MongoDB",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "learning",
+    "mongodb"
+  ],
+  "author": {
+    "name": "Aneira Gramarye",
+    "email": "alexander.szmidt@gmail.com"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
