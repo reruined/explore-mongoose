@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="EN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Place order</title>
+  </head>
+  <body>
+    <header>
+      <h1>Place order</h1>
+    </header>
+    <form method="post" action="/place_order">
+      <label for="name">Name: <input type="text" name="name" required /></label>
+      <label for="address">Address: <input type="text" name="address" required /></label>
+      <label for="item">Item: <input type="text" name="item" required /></label>
+      <input type="submit" value="Place order" />
+    </form>
+  </body>
+</html>
