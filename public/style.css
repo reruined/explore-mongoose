@@ -1,7 +1,38 @@
+* {
+  box-sizing: border-box;
+}
+
 h1 {
   color: lightgray;
+  /*margin: 0 auto;*/
+  text-align: center;
 }
 
 body {
+  background-color: gray;
+}
+
+form {
+  width: 300px;
+  background-color: lightgray;
+  padding: 15px;
+  margin: 5px auto;
+}
+
+label {
+  width: 100%;
+}
+
+input {
+  width: 100%;
+  margin-bottom: 0.5em;
+}
+
+input[type="submit"] {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+  height: 2em;
+  color: rgb(240, 240, 240);
+  border-color: rgb(240, 240, 240);
   background-color: gray;
 }

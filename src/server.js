@@ -5,26 +5,67 @@ const mongoose = require('mongoose')
 
 const PORT = process.env.PORT || 5000
 
-// configure mongoose
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+//////////////
+/// MONGOOSE //
+//////////////
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
+  .then(result => {
+    console.log('[mongoose] connected')
+  })
+  .catch(err => console.error('[mongoose]', err))
 
+const Profile = mongoose.model('Profile', new mongoose.Schema({
+  email: { type: String, required: true, index: true, unique: true },
+  name: {type: String},
+  address: {type: String}
+}))
+
+async function saveProfile(data) {
+  let profile = await Profile.findOne({email: data.email})
+  if(!profile) {
+    profile = new Profile({
+      email: data.email,
+      name: data.name,
+      address: data.address
+    })
+    const result = await profile.save()
+    console.log('New profile: ', result)
+    return result
+  }
+
+  profile.name = data.name
+  profile.address = data.address
+  const result = await profile.save()
+  console.log('Updated profile: ', result)
+  return result
+}
+
+async function findProfileByEmail(email) {
+  const profile = await Profile.findOne({email: email})
+  if(!profile) {
+    console.log(`Profile '${email}' not found`)
+    return null
+  }
+
+  console.log(`Profile '${email}': `, profile)
+  return profile
+}
+  
+/*
 const orderSchema = new mongoose.Schema({
   name: { type: String, required: true },
   address: { type: String, required: true },
   item: { type: String, required: true }
 })
-
 const Order = mongoose.model('Order', orderSchema)
 
-const createAndSaveOrder = (data, done) => {
+const createAndSaveOrder = async data => {
   const order = new Order(data)
-  order.save((err, data) => {
-    if(err) return console.error(err)
-    done(null, data)
-  })
+  return order.save()
 }
 
 const findOrderById = (id, done) => {
@@ -33,8 +74,12 @@ const findOrderById = (id, done) => {
     done(null, data)
   })
 }
+*/
 
-// configure express
+//////////////
+/// EXPRESS //
+//////////////
+
 const app = express()
 
 // root-level logger
@@ -47,11 +92,30 @@ app.use('/', (req, res, next) => {
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(express.static(process.env.PUBLIC_FOLDER_PATH))
 
-app.post('/place_order', (req, res) => {
-  createAndSaveOrder(req.body, (err, data) => {
-    if(err) return res.sendStatus(400)
-    res.json(data)
+app.get('/profile', (req, res) => {
+  findProfileByEmail(req.query.email).then(result => {
+    if(!result) return res.sendStatus(404)
+    res.json(result)
   })
+})
+
+app.post('/profile', (req, res) => {
+  saveProfile(req.body).then(result => {
+    res.json(result)
+  })
+})
+
+/*
+app.post('/place_order', (req, res) => {
+  createAndSaveOrder(req.body)
+    .then(value => {
+      console.log('[server] order placed: ', value)
+      res.json(value)
+    })
+    .catch(err => {
+      console.error('[server] failed to place order: ', err)
+      res.status(400).send(err)
+    })
 })
 
 app.get('/order/:id', (req, res) => {
@@ -60,8 +124,10 @@ app.get('/order/:id', (req, res) => {
     res.json(data)
   })
 })
+*/
+
 
 app.listen(PORT, () => {
-  console.log(`Listening on port ${PORT}...`)
+  console.log(`[server] listening on port ${PORT}...`)
 })
 
