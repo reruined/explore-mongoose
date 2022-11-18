@@ -2,6 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
+const path = require('path')
 
 const PORT = process.env.PORT || 5000
 
@@ -90,12 +91,12 @@ app.use('/', (req, res, next) => {
 
 // middlewares
 app.use(bodyParser.urlencoded({extended: false}))
-app.use(express.static(process.env.PUBLIC_FOLDER_PATH))
-
+app.use(express.static(path.join(__dirname, '../public')))
 app.get('/profile', (req, res) => {
   findProfileByEmail(req.query.email).then(result => {
     if(!result) return res.sendStatus(404)
     res.json(result)
+    // res.sendfile and replace tokens
   })
 })
 
