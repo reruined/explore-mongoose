@@ -34,6 +34,7 @@ async function saveProfile(data) {
       address: data.address
     })
     const result = await profile.save()
+    result.newEntry = true
     console.log('New profile: ', result)
     return result
   }
@@ -95,8 +96,14 @@ app.use(express.static(path.join(__dirname, '../public')))
 app.get('/profile', (req, res) => {
   findProfileByEmail(req.query.email)
     .then(result => {
-      if(!result) return res.sendStatus(404)
-      res.json(result)
+      const obj = {
+        email: result.email,
+        name: result.name,
+        address: result.address
+      }
+      const str = 'Requested profile: '
+      const objStr = JSON.stringify(obj, null, 2)
+      res.send(`<p>${str}</p><pre>${objStr}</pre>`)
       // res.sendfile and replace tokens
     })
     .catch(err => {
@@ -105,9 +112,20 @@ app.get('/profile', (req, res) => {
 })
 
 app.post('/profile', (req, res) => {
-  saveProfile(req.body).then(result => {
-    res.json(result)
-  })
+  saveProfile(req.body)
+    .then(result => {
+      const obj = {
+        email: result.email,
+        name: result.name,
+        address: result.address
+      }
+      const str = result.newEntry ? 'Created new profile: ' : 'Updated existing profile: '
+      const objStr = JSON.stringify(obj, null, 2)
+      res.send(`<p>${str}</p><pre>${objStr}</pre>`)
+    })
+    .catch(err => {
+      res.status(400).send(err)
+    })
 })
 
 /*
