@@ -93,11 +93,15 @@ app.use('/', (req, res, next) => {
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(express.static(path.join(__dirname, '../public')))
 app.get('/profile', (req, res) => {
-  findProfileByEmail(req.query.email).then(result => {
-    if(!result) return res.sendStatus(404)
-    res.json(result)
-    // res.sendfile and replace tokens
-  })
+  findProfileByEmail(req.query.email)
+    .then(result => {
+      if(!result) return res.sendStatus(404)
+      res.json(result)
+      // res.sendfile and replace tokens
+    })
+    .catch(err => {
+      res.status(400).send(err)
+    })
 })
 
 app.post('/profile', (req, res) => {
