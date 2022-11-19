@@ -3,8 +3,20 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const path = require('path')
+const livereload = require('livereload')
+const connectLivereload = require('connect-livereload')
 
 const PORT = process.env.PORT || 5000
+
+//////////////////
+/// LIVE RELOAD //
+//////////////////
+const liveReloadServer = livereload.createServer()
+liveReloadServer.server.once('connection', () => {
+  setTimeout(() => {
+    liveReloadServer.refresh("/");
+  }, 100);
+})
 
 //////////////
 /// MONGOOSE //
@@ -56,27 +68,6 @@ async function findProfileByEmail(email) {
   console.log(`Profile '${email}': `, profile)
   return profile
 }
-  
-/*
-const orderSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  address: { type: String, required: true },
-  item: { type: String, required: true }
-})
-const Order = mongoose.model('Order', orderSchema)
-
-const createAndSaveOrder = async data => {
-  const order = new Order(data)
-  return order.save()
-}
-
-const findOrderById = (id, done) => {
-  Order.findById(id, (err, data) => {
-    if(err) return console.error(err)
-    done(null, data)
-  })
-}
-*/
 
 //////////////
 /// EXPRESS //
@@ -91,6 +82,7 @@ app.use('/', (req, res, next) => {
 })
 
 // middlewares
+app.use(connectLivereload())
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(express.static(path.join(__dirname, '../public')))
 app.get('/profile', (req, res) => {
