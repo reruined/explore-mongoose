@@ -5,6 +5,7 @@ const mongoose = require('mongoose')
 const path = require('path')
 const livereload = require('livereload')
 const connectLivereload = require('connect-livereload')
+const fs = require('fs/promises')
 
 const PORT = process.env.PORT || 5000
 
@@ -32,9 +33,19 @@ mongoose
   .catch(err => console.error('[mongoose]', err))
 
 const Profile = mongoose.model('Profile', new mongoose.Schema({
-  email: { type: String, required: true, index: true, unique: true },
-  name: {type: String},
-  address: {type: String}
+  email: { 
+    type: String, 
+    required: true, 
+    index: true, 
+    unique: true,
+    validate: /@/
+  },
+  name: {
+    type: String
+  },
+  address: {
+    type: String
+  }
 }))
 
 async function saveProfile(data) {
@@ -84,7 +95,6 @@ app.use('/', (req, res, next) => {
 // middlewares
 app.use(connectLivereload())
 app.use(bodyParser.urlencoded({extended: false}))
-app.use(express.static(path.join(__dirname, '../public')))
 
 app.get('/profile', (req, res) => {
   findProfileByEmail(req.query.email)
@@ -147,6 +157,27 @@ app.post('/create-profile', async (req, res) => {
   }
 })
 
+app.get('/profiles', async (req, res) => {
+  try {
+    const profiles = await Profile.find({})
+
+    res.json(profiles)
+  }
+  catch {
+    console.error(e.message)
+    res.status(400).send(e.message)
+  }
+})
+
+app.get('/', async (req, res) => {
+  const profiles = await Profile.find({})
+  const listItems = profiles.map(x => `<li>${x.email}</li>`)
+  const listItemsAsHtml = listItems.join('\n')
+  const page = await fs.readFile(path.join(__dirname, '../public/index.html'), { encoding: 'utf-8'})  
+  res.send(page.replace('%PROFILES', listItemsAsHtml))
+})
+
+app.use(express.static(path.join(__dirname, '../public')))
 
 app.listen(PORT, () => {
   console.log(`[server] listening on port ${PORT}...`)
