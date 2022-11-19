@@ -2,16 +2,25 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="index.style.css" />
     <title>Start page</title>
   </head>
   <body>
     <h1>Start page</h1>
     <section>
       <h2>Profiles</h2>
+      <ul class="profile-list">
+        %PROFILES
+      </ul>
     </section>
     <section>
       <h2>Create profile</h2>
+      <form method="post" action="/create-profile">
+        <label for="email">Email: <input name="email" type="email" required /></label>
+        <label for="name">Name: <input name="name" type="text" /></label>
+        <label for="address">Address: <input address="address" type="text" /></label>
+        <input type="submit" value="Create profile" />
+      </form>
     </section>
   </body>
 </html>

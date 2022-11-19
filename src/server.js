@@ -85,6 +85,7 @@ app.use('/', (req, res, next) => {
 app.use(connectLivereload())
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(express.static(path.join(__dirname, '../public')))
+
 app.get('/profile', (req, res) => {
   findProfileByEmail(req.query.email)
     .then(result => {
@@ -120,26 +121,31 @@ app.post('/profile', (req, res) => {
     })
 })
 
-/*
-app.post('/place_order', (req, res) => {
-  createAndSaveOrder(req.body)
-    .then(value => {
-      console.log('[server] order placed: ', value)
-      res.json(value)
-    })
-    .catch(err => {
-      console.error('[server] failed to place order: ', err)
-      res.status(400).send(err)
-    })
-})
+app.post('/create-profile', async (req, res) => {
+  try {
+    const {
+      email,
+      name,
+      address
+    } = req.body
+  
+    if(!email) throw new Error("Missing key 'email' in body")
+  
+    const profile = await Profile.findOne({email})
+    if(profile) throw new Error(`Profile '${email}' already exists`)
 
-app.get('/order/:id', (req, res) => {
-  findOrderById(req.params.id, (err, data) => {
-    if(err) return res.status(400).send(err)
-    res.json(data)
-  })
+    const newProfile = await new Profile({
+      email,
+      name,
+      address
+    }).save()
+    res.json(newProfile)
+  }
+  catch (e) {
+    console.error(e.message)
+    res.status(400).send(e.message)
+  }
 })
-*/
 
 
 app.listen(PORT, () => {

@@ -1,0 +1,1 @@
+POST request on /create-profile with empty body
