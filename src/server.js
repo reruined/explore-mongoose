@@ -48,38 +48,6 @@ const Profile = mongoose.model('Profile', new mongoose.Schema({
   }
 }))
 
-async function saveProfile(data) {
-  let profile = await Profile.findOne({email: data.email})
-  if(!profile) {
-    profile = new Profile({
-      email: data.email,
-      name: data.name,
-      address: data.address
-    })
-    const result = await profile.save()
-    result.newEntry = true
-    console.log('New profile: ', result)
-    return result
-  }
-
-  profile.name = data.name
-  profile.address = data.address
-  const result = await profile.save()
-  console.log('Updated profile: ', result)
-  return result
-}
-
-async function findProfileByEmail(email) {
-  const profile = await Profile.findOne({email: email})
-  if(!profile) {
-    console.log(`Profile '${email}' not found`)
-    return null
-  }
-
-  console.log(`Profile '${email}': `, profile)
-  return profile
-}
-
 //////////////
 /// EXPRESS //
 //////////////
@@ -96,41 +64,7 @@ app.use('/', (req, res, next) => {
 app.use(connectLivereload())
 app.use(bodyParser.urlencoded({extended: false}))
 
-app.get('/profile', (req, res) => {
-  findProfileByEmail(req.query.email)
-    .then(result => {
-      const obj = {
-        email: result.email,
-        name: result.name,
-        address: result.address
-      }
-      const str = 'Requested profile: '
-      const objStr = JSON.stringify(obj, null, 2)
-      res.send(`<p>${str}</p><pre>${objStr}</pre>`)
-      // res.sendfile and replace tokens
-    })
-    .catch(err => {
-      res.status(400).send(err)
-    })
-})
-
-app.post('/profile', (req, res) => {
-  saveProfile(req.body)
-    .then(result => {
-      const obj = {
-        email: result.email,
-        name: result.name,
-        address: result.address
-      }
-      const str = result.newEntry ? 'Created new profile: ' : 'Updated existing profile: '
-      const objStr = JSON.stringify(obj, null, 2)
-      res.send(`<p>${str}</p><pre>${objStr}</pre>`)
-    })
-    .catch(err => {
-      res.status(400).send(err)
-    })
-})
-
+// routes
 app.post('/create-profile', async (req, res) => {
   try {
     const {
@@ -170,11 +104,25 @@ app.get('/profiles', async (req, res) => {
 })
 
 app.get('/', async (req, res) => {
+  const email = req.query.profile
+
+  // load page with tokens
+  let page = await fs.readFile(path.join(__dirname, '../public/index.html'), { encoding: 'utf-8'})  
+
+  // add existing profiles
   const profiles = await Profile.find({})
-  const listItems = profiles.map(x => `<li>${x.email}</li>`)
+  const listItems = profiles.map(x => `<option value="${x.email}" ${x.email === email ? 'selected' : ''}>${x.email}</option>`)
   const listItemsAsHtml = listItems.join('\n')
-  const page = await fs.readFile(path.join(__dirname, '../public/index.html'), { encoding: 'utf-8'})  
-  res.send(page.replace('%PROFILES', listItemsAsHtml))
+  page = page.replace('%PROFILES', listItemsAsHtml)
+
+  // populate form with selected profile, or defaults
+  const profile = email ? await Profile.findOne({email}).orFail() : {}
+  console.log(profile)
+  page = page.replace('%EMAIL', profile.email || '')
+  page = page.replace('%NAME', profile.name || '')
+  page = page.replace('%ADDRESS', profile.address || '')
+  
+  res.send(page)
 })
 
 app.use(express.static(path.join(__dirname, '../public')))

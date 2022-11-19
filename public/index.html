@@ -9,16 +9,19 @@
     <h1>Start page</h1>
     <section>
       <h2>Profiles</h2>
-      <ul class="profile-list">
-        %PROFILES
-      </ul>
+      <form method="get" action="/">
+        <select name="profile" class="profiles">
+          %PROFILES
+        </select>
+        <input type="submit" value="Load" />
+      </form>
     </section>
     <section>
       <h2>Create profile</h2>
       <form method="post" action="/create-profile">
-        <label for="email">Email: <input name="email" type="email" required /></label>
-        <label for="name">Name: <input name="name" type="text" /></label>
-        <label for="address">Address: <input address="address" type="text" /></label>
+        <label for="email">Email: <input name="email" type="email" value="%EMAIL" required /></label>
+        <label for="name">Name: <input name="name" type="text" value="%NAME" /></label>
+        <label for="address">Address: <input name="address" type="text" value="%ADDRESS" /></label>
         <input type="submit" value="Create profile" />
       </form>
     </section>
