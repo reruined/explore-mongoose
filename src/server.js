@@ -65,7 +65,7 @@ app.use(connectLivereload())
 app.use(bodyParser.urlencoded({extended: false}))
 
 // routes
-app.post('/create-profile', async (req, res) => {
+app.post('/profiles', async (req, res) => {
   try {
     const {
       email,
@@ -83,7 +83,7 @@ app.post('/create-profile', async (req, res) => {
       name,
       address
     }).save()
-    res.json(newProfile)
+    res.status(201).json(newProfile)
   }
   catch (e) {
     console.error(e.message)
@@ -102,6 +102,20 @@ app.get('/profiles', async (req, res) => {
     res.status(400).send(e.message)
   }
 })
+
+app.get('/profiles/:email', async (req, res) => {
+  const profile = await Profile.find({email: req.params.email})
+  res.json(profile)
+})
+
+app.put('/profiles/:email', async (req, res) => {
+
+})
+
+app.delete('/profiles/:email', async (req, res) => {
+  
+})
+
 
 app.get('/', async (req, res) => {
   const email = req.query.profile
