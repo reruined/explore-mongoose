@@ -6,6 +6,7 @@ const path = require('path')
 const livereload = require('livereload')
 const connectLivereload = require('connect-livereload')
 const fs = require('fs/promises')
+const { assert } = require('console')
 
 const PORT = process.env.PORT || 5000
 
@@ -94,7 +95,6 @@ app.post('/profiles', async (req, res) => {
 app.get('/profiles', async (req, res) => {
   try {
     const profiles = await Profile.find({})
-
     res.json(profiles)
   }
   catch {
@@ -104,16 +104,33 @@ app.get('/profiles', async (req, res) => {
 })
 
 app.get('/profiles/:email', async (req, res) => {
-  const profile = await Profile.find({email: req.params.email})
+  const profile = await Profile.findOne({email: req.params.email})
+  if(!profile) return res.sendStatus(404)
   res.json(profile)
 })
 
 app.put('/profiles/:email', async (req, res) => {
+  const profile = await Profile.findOne({email: req.params.email})
+  if(!profile) return res.sendStatus(404)
 
+  profile.name = req.body.name || profile.name
+  profile.address = req.body.address || profile.address
+
+  const updatedProfile = await profile.save()
+  console.log(updatedProfile)
+  res.json(updatedProfile)
 })
 
 app.delete('/profiles/:email', async (req, res) => {
-  
+  const profile = await Profile.findOne({email: req.params.email})
+  if(!profile) return res.sendStatus(404)
+
+  if(Object.keys(req.body).length !== 0) {
+    return res.status(400).send('Request body must be empty')
+  }
+
+  await Profile.deleteOne({_id: profile._id})
+  res.sendStatus(204)
 })
 
 
@@ -131,7 +148,6 @@ app.get('/', async (req, res) => {
 
   // populate form with selected profile, or defaults
   const profile = email ? await Profile.findOne({email}).orFail() : {}
-  console.log(profile)
   page = page.replace('%EMAIL', profile.email || '')
   page = page.replace('%NAME', profile.name || '')
   page = page.replace('%ADDRESS', profile.address || '')
