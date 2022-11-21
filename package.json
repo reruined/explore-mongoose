@@ -4,7 +4,8 @@
   "description": "Testbed for learning MongoDB",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon -e js,html,css,json,env --watch ./public --watch ./src src/server.js"
+    "watch": "nodemon -e js,html,css,json,env --watch ./public --watch ./src src/server.js",
+    "start": "node src/server.js"
   },
   "keywords": [
     "learning",
