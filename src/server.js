@@ -84,7 +84,8 @@ app.post('/profiles', async (req, res) => {
       name,
       address
     }).save()
-    res.status(201).json(newProfile)
+    //res.status(201).json(newProfile)
+    res.redirect(`/profiles/${encodeURIComponent(newProfile.email)}`)
   }
   catch (e) {
     console.error(e.message)
@@ -103,22 +104,47 @@ app.get('/profiles', async (req, res) => {
   }
 })
 
+app.delete('/profiles', async (req, res) => {
+  console.warn('Temporary route DELETE /profiles being used')
+  const count = (await Profile.deleteMany({})).deletedCount
+  res.send(`Deleted ${count} profiles`)
+})
+
 app.get('/profiles/:email', async (req, res) => {
   const profile = await Profile.findOne({email: req.params.email})
   if(!profile) return res.sendStatus(404)
-  res.json(profile)
+
+  const pathname = path.join(__dirname, '../public/profile.html')
+  let page = await fs.readFile(pathname, {encoding: 'utf-8'})
+  page = page.replaceAll('%EMAIL', profile.email || '')
+  page = page.replaceAll('%NAME', profile.name || '')
+  page = page.replaceAll('%ADDRESS', profile.address || '')
+
+  // const acceptHeader = req.header('accept') <-- use this for sending html or json
+  res.send(page)
 })
 
-app.put('/profiles/:email', async (req, res) => {
-  const profile = await Profile.findOne({email: req.params.email})
-  if(!profile) return res.sendStatus(404)
+// should be PUT, but PUT is not supported by forms
+app.post('/profiles/:email', async (req, res) => {
+  const email = req.params.email
+  const method = req.body._method
 
-  profile.name = req.body.name || profile.name
-  profile.address = req.body.address || profile.address
+  if(method === 'PUT') {
+    const profile = await Profile.findOne({email: email})
+    if(!profile) return res.sendStatus(404)
+    profile.name = req.body.name || profile.name
+    profile.address = req.body.address || profile.address
+  
+    const updatedProfile = await profile.save()
+    return res.redirect(`/profiles/${encodeURIComponent(updatedProfile.email)}`)
+  }
 
-  const updatedProfile = await profile.save()
-  console.log(updatedProfile)
-  res.json(updatedProfile)
+  if(method === 'DELETE') {
+    await Profile.deleteOne({email: email})
+    return res.redirect('/')
+  }
+
+  res.sendStatus(400)
 })
 
 app.delete('/profiles/:email', async (req, res) => {
@@ -136,6 +162,9 @@ app.delete('/profiles/:email', async (req, res) => {
 
 app.get('/', async (req, res) => {
   const email = req.query.profile
+  if(email) {
+    return res.redirect(`/profiles/${encodeURIComponent(email)}`)
+  }
 
   // load page with tokens
   let page = await fs.readFile(path.join(__dirname, '../public/index.html'), { encoding: 'utf-8'})  
@@ -145,12 +174,6 @@ app.get('/', async (req, res) => {
   const listItems = profiles.map(x => `<option value="${x.email}" ${x.email === email ? 'selected' : ''}>${x.email}</option>`)
   const listItemsAsHtml = listItems.join('\n')
   page = page.replace('%PROFILES', listItemsAsHtml)
-
-  // populate form with selected profile, or defaults
-  const profile = email ? await Profile.findOne({email}).orFail() : {}
-  page = page.replace('%EMAIL', profile.email || '')
-  page = page.replace('%NAME', profile.name || '')
-  page = page.replace('%ADDRESS', profile.address || '')
   
   res.send(page)
 })

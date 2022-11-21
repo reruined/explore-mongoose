@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="../profile.style.css" />
+    <title>Profile</title>
+  </head>
+  <body>
+    <h1>Profile</h1>
+    <form method="post" action="/profiles/%EMAIL">
+      <input type="hidden" name="_method" value="PUT" />
+      <label for="email">Email: <input type="email" value="%EMAIL" disabled /></label>
+      <label for="name">Name: <input name="name" type="text" value="%NAME" /></label>
+      <label for="address">Address: <input name="address" type="text" value="%ADDRESS" /></label>
+      <input type="submit" value="Update profile" />
+    </form>
+    <form method="post" action="/profiles/%EMAIL">
+      <input type="hidden" name="_method" value="DELETE" />
+      <input type="submit" value="Delete profile" />
+    </form>
+    <section>
+      <a href="/" class="button-cancel">Return</a>
+    </section>
+    
+  </body>
+</html>

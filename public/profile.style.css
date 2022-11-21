@@ -1,0 +1,37 @@
+* {
+  box-sizing: border-box;
+}
+
+h1 {
+  text-align: center;
+}
+
+section {
+  width: 300px;
+  margin: 0 auto;
+}
+
+form {
+  width: 300px;
+  margin: 0 auto;
+}
+
+label {
+  width: 100%;
+}
+
+input, select, .button-cancel {
+  width: 100%;
+  margin-bottom: 0.5em;
+}
+
+.button-cancel {
+  display: inline-block;
+  text-align: center;
+  border: solid 1px gray;
+  margin: 0 auto;
+  background-color: buttonface;
+  text-decoration: none;
+  color: black;
+  border-radius: 3px;
+}
